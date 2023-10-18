@@ -15,6 +15,7 @@ import requests
 from urllib.parse import urljoin
 import json
 
+
 # A function to load the configuration from the config.json file
 def load_config():
     try:
@@ -25,6 +26,7 @@ def load_config():
         print("Файл config.json не знайдено. Будь ласка, створіть його.")
         exit(1)
 
+
 # Get the login and password from the configuration
 config = load_config()
 login = config["login"]
@@ -34,7 +36,7 @@ password = config["password"]
 current_directory = os.getcwd()
 
 # File path for the Catalog_XXXX.xls in the current directory
-file_path = os.path.join(current_directory, 'Catalog_XXXX.xls')
+file_path = os.path.join(current_directory, "Catalog_XXXX.xls")
 
 # Open the workbook
 workbook = xlrd.open_workbook(file_path)
@@ -42,8 +44,8 @@ workbook = xlrd.open_workbook(file_path)
 # Get a list of names of all letters
 sheet_names = workbook.sheet_names()
 
-def get_glass_coding(file_path):
 
+def get_glass_coding(file_path):
     # Select a sheet
     sheet = workbook.sheet_by_name(sheet_names[1])
 
@@ -93,27 +95,29 @@ def get_glass_coding(file_path):
 
     return type_glass_coding
 
+
 # get_glass_coding(file_path)
+
 
 def custom_replace(input_str, glass_encoding):
     # Add spaces between words that are next to each other without a space
     for key in glass_encoding.keys():
-        input_str = re.sub(r'(?<=\S)({})(?=\S)'.format(re.escape(key)), r' \1 ', input_str)
+        input_str = re.sub(r"(?<=\S)({})(?=\S)".format(re.escape(key)), r" \1 ", input_str)
 
     # Decipher the keys
     for key, value in glass_encoding.items():
         # Create a regular expression pattern to match the key as a whole word
-        pattern = r'\b{}\b'.format(re.escape(key))
+        pattern = r"\b{}\b".format(re.escape(key))
         # Use re.sub to perform the replacement
         input_str = re.sub(pattern, value, input_str)
 
     # Remove any extra spaces
-    input_str = re.sub(r'\s+', ' ', input_str).strip()
+    input_str = re.sub(r"\s+", " ", input_str).strip()
 
     return input_str
 
-def get_glass_producer(file_path):
 
+def get_glass_producer(file_path):
     # Select a sheet
     sheet = workbook.sheet_by_name(sheet_names[2])
 
@@ -130,40 +134,42 @@ def get_glass_producer(file_path):
 
 def format_car_models(input_file, output_file):
     # Open the input file for reading
-    with open(input_file, 'r', encoding='utf-8') as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         car_models_data = [json.loads(line.strip()) for line in f]
 
     if not os.path.exists(output_file):
-
         # Write the data in a new file in the desired format
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(car_models_data, f, indent=2, ensure_ascii=False)
 
-        print(f"Файл {input_file} був перетворений і збережений у файл {output_file} у потрібному форматі.")
+        print(
+            f"Файл {input_file} був перетворений і збережений у файл {output_file} у потрібному форматі."
+        )
 
     else:
         print(f"Файл {output_file} вже існує.")
 
+
 def process_XXXX_data(input_file, output_file):
     # Open the input file for reading
-    with open(input_file, 'r', encoding='utf-8') as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         # Read the entire content of the file
         XXXX_data_str = f.read()
 
     # Separate JSON objects with a comma and a newline
-    XXXX_data_str = XXXX_data_str.replace(']\n[', '')
-    XXXX_data_str = XXXX_data_str.replace('\n][', ', ')
-    XXXX_data_str = XXXX_data_str.replace('}\n', '}, ')
-    XXXX_data_str = XXXX_data_str.replace(', ]', '\n]')
+    XXXX_data_str = XXXX_data_str.replace("]\n[", "")
+    XXXX_data_str = XXXX_data_str.replace("\n][", ", ")
+    XXXX_data_str = XXXX_data_str.replace("}\n", "}, ")
+    XXXX_data_str = XXXX_data_str.replace(", ]", "\n]")
 
     # save the updated content in a new file
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(XXXX_data_str)
 
     print(f"Файл {input_file} був оброблений і збережений у файлі {output_file} у потрібному форматі.")
 
     # Download the converted file
-    with open(output_file, 'r', encoding='utf-8') as f:
+    with open(output_file, "r", encoding="utf-8") as f:
         XXXX_data = json.load(f)
 
         predefined_producers = get_glass_producer(file_path)
@@ -175,30 +181,34 @@ def process_XXXX_data(input_file, output_file):
                 glass_producer = obj["name"]
 
                 # Check if the glass producer is in the predefined list
-                matching_producers = [producer for producer in predefined_producers if producer in glass_producer]
+                matching_producers = [
+                    producer for producer in predefined_producers if producer in glass_producer
+                ]
 
                 # Set the "glass producer" field based on the match
                 if matching_producers:
                     obj["manufacturer"] = matching_producers[0]
                 else:
-                    obj["manufacturer"] = ''
+                    obj["manufacturer"] = ""
 
                 if "name" in obj:
-                    name_parts = obj["name"].split(', ')
-                    obj["title"] = ', '.join(name_parts[1:4])
-                    obj["full text"] = ', '.join(name_parts)[:].split("=")[0]
-                    obj["type_glass"] = ', '.join(name_parts[1:2])
-                    obj["desc"] = ', '.join(name_parts[-3:-1])
+                    name_parts = obj["name"].split(", ")
+                    obj["title"] = ", ".join(name_parts[1:4])
+                    obj["full text"] = ", ".join(name_parts)[:].split("=")[0]
+                    obj["type_glass"] = ", ".join(name_parts[1:2])
+                    obj["desc"] = ", ".join(name_parts[-3:-1])
 
                     # Apply custom replacement to "title" and "full text"
-                    obj["title"] = custom_replace(obj["title"], glass_encoding) + ' ' + ' '.join(name_parts[:1])
+                    obj["title"] = (
+                        custom_replace(obj["title"], glass_encoding) + " " + " ".join(name_parts[:1])
+                    )
                     obj["full text"] = custom_replace(obj["full text"], glass_encoding)
                     obj["type_glass"] = custom_replace(obj["type_glass"], glass_encoding)
                     obj["note"] = ""
                     obj["desc"] = custom_replace(obj["desc"], glass_encoding)
 
     # Save the updated content in the same file
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(XXXX_data, f, ensure_ascii=False, indent=2)
 
     print(f"Оброблені дані збережені у файлі {output_file}.")
@@ -208,7 +218,7 @@ def combine_data(XXXX_file, car_models_file, output_file):
     import json
 
     # Open the files for reading
-    with open(car_models_file, 'r', encoding='utf-8') as f1, open(XXXX_file, 'r', encoding='utf-8') as f2:
+    with open(car_models_file, "r", encoding="utf-8") as f1, open(XXXX_file, "r", encoding="utf-8") as f2:
         # Read data from files
         car_models_data = json.load(f1)
         XXXX_data = json.load(f2)
@@ -225,7 +235,9 @@ def combine_data(XXXX_file, car_models_file, output_file):
         model_code = car_model.get("Model code", "")
 
         # Find all objects from the file "XXXX_formatted.json" with the same code
-        matching_XXXX_models = [XXXX_model for XXXX_model in XXXX_data if XXXX_model.get("code") == model_code]
+        matching_XXXX_models = [
+            XXXX_model for XXXX_model in XXXX_data if XXXX_model.get("code") == model_code
+        ]
 
         # Combine the data of the two files if there is a code match
         for XXXX_model in matching_XXXX_models:
@@ -246,13 +258,13 @@ def combine_data(XXXX_file, car_models_file, output_file):
                     "type_glass": XXXX_model.get("type_glass", ""),
                     "manufacturer": XXXX_model.get("manufacturer", ""),
                     "note": XXXX_model.get("note", ""),
-                    "desc": XXXX_model.get("desc", "")
+                    "desc": XXXX_model.get("desc", ""),
                 }
                 combined_data.append(combined_model)
                 id_counter += 1
 
     # write the combined data into a new file
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(combined_data, f, indent=2, ensure_ascii=False)
 
     print(f"Дані були об'єднані і збережені у файлі {output_file}.")
@@ -260,17 +272,17 @@ def combine_data(XXXX_file, car_models_file, output_file):
 
 # Delete all json files except the required file
 def delete_all_json_files_except(file_to_keep):
-    for filename in os.listdir('.'):
-        if filename.endswith('.json') and filename != file_to_keep:
+    for filename in os.listdir("."):
+        if filename.endswith(".json") and filename != file_to_keep:
             os.remove(filename)
 
 
 # Options for running the browser in headless mode
 options = Options()
-options.add_argument('--headless')
+options.add_argument("--headless")
 
 # The path to the Chrome driver
-driver_path = '/chromedriver'
+driver_path = "/chromedriver"
 
 # You have to download driver for your browser and put it in current directory
 # Start a web browser (for example, Chrome)
@@ -280,9 +292,7 @@ driver = webdriver.Chrome()
 driver.get("http://XXXX.ua/ukr/login.html")
 
 # find the email and password fields and send the data
-email_input = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.ID, "input_login_inpt"))
-)
+email_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "input_login_inpt")))
 email_input.send_keys(login)
 
 password_input = WebDriverWait(driver, 10).until(
@@ -330,9 +340,7 @@ sleep(5)
 WebDriverWait(driver, 10).until(EC.url_to_be("http://XXXX.ua/ukr/shop/price.html"))
 
 # Click the "Інтернет магазин" button
-shop_button = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.CSS_SELECTOR, 'a.first_li'))
-)
+shop_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.first_li")))
 shop_button.click()
 
 sleep(5)
@@ -348,7 +356,6 @@ sheet_names = workbook.sheet_names()
 sheet = workbook.sheet_by_name(sheet_names[3])
 
 if not os.path.exists("Car_models.json"):
-
     # Open the file for recording
     with open("Car_models.json", "w", encoding="utf-8") as f:
         # Display the values of all lines on our letter
@@ -360,21 +367,21 @@ if not os.path.exists("Car_models.json"):
                 "brand": f"{row_values[2].split(' ')[0]}",
                 "model": f"{row_values[2].split(' ')[1]}",
                 "body": f"{row_values[3]}",
-                "year": f"{row_values[4]}".split('.')[0] + " - " + f"{row_values[5]}".split('.')[0],
+                "year": f"{row_values[4]}".split(".")[0] + " - " + f"{row_values[5]}".split(".")[0],
             }
 
             # Write the table data into a file in JSON format
             json.dump(Car_models, f, ensure_ascii=False)
-            f.write('\n')
+            f.write("\n")
 
     print("В поточній директорії вже було створено файл 'Car_models.json'")
     sleep(5)
 
 # Create a copy of the "Car_models.json" file with the name "Car_models_full.json"
-shutil.copyfile('Car_models.json', 'Car_models_full.json')
+shutil.copyfile("Car_models.json", "Car_models_full.json")
 
 # Loading data from the file "Car_models.json"
-with open('Car_models.json', 'r', encoding='utf-8') as f:
+with open("Car_models.json", "r", encoding="utf-8") as f:
     car_models_data = [json.loads(line) for line in f]
 
 # Code processing loop
@@ -384,9 +391,7 @@ for car_model_data in car_models_data:
     code = car_model_data["Model code"]
 
     # Find the input field with the identifier "code" and enter the value of the code
-    code_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "code"))
-    )
+    code_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "code")))
 
     # Clear the input field (if there is a previous value)
     code_input.clear()
@@ -417,12 +422,12 @@ for car_model_data in car_models_data:
     if found_rows:
         for row in found_rows:
             # Find the second <td> element in the current line (index 3, since indexes start with 0)
-            euro_code_element = row.find_all('td')[0]
-            glass_element = row.find_all('td')[1]
-            price_element = row.find_all('td')[3]
+            euro_code_element = row.find_all("td")[0]
+            glass_element = row.find_all("td")[1]
+            price_element = row.find_all("td")[3]
 
             # Get the text values of the found elements and add them to the list
-            euro_code = euro_code_element.text.split('-')[0].strip()
+            euro_code = euro_code_element.text.split("-")[0].strip()
             glass = glass_element.text.strip()
             price_text = price_element.text.strip()
 
@@ -431,8 +436,8 @@ for car_model_data in car_models_data:
 
             # Add details to the list
             glass_price_size_list.append(
-                {"code": code, "euro_code": euro_code, "name": glass, "price": price,
-                 "status": "In stock"})
+                {"code": code, "euro_code": euro_code, "name": glass, "price": price, "status": "In stock"}
+            )
 
     else:
         # The code was not found, we are setting the status "Out of stock"
@@ -450,8 +455,8 @@ for car_model_data in car_models_data:
         # Handling an exception if it occurs and outputting an error message
         print(f"Виникла помилка під час запису JSON-даних: {e}")
 
-  # Loading data from the file "Car_models.json"
-    with open('Car_models.json', 'r', encoding='utf-8') as f:
+    # Loading data from the file "Car_models.json"
+    with open("Car_models.json", "r", encoding="utf-8") as f:
         car_models_data = [json.loads(line) for line in f]
 
     # Delete the first line from the list
@@ -461,27 +466,24 @@ for car_model_data in car_models_data:
     with open("Car_models.json", "w", encoding="utf-8") as f:
         for car_model_data in car_models_data:
             json.dump(car_model_data, f, ensure_ascii=False)
-            f.write('\n')
+            f.write("\n")
 
     # Call the function to convert the files
-    format_car_models('Car_models_full.json', 'Car_models_formatted.json')
-    process_XXXX_data('XXXX.json', 'XXXX_formatted.json')
+    format_car_models("Car_models_full.json", "Car_models_formatted.json")
+    process_XXXX_data("XXXX.json", "XXXX_formatted.json")
     sleep(2)
 
-       # Check whether we processed the last object
+    # Check whether we processed the last object
     if count == len(car_models_data):
         break
     # Increase the counter
     count += 1
-    combine_data('XXXX_formatted.json', 'Car_models_formatted.json', 'Combined_data.json')
+    combine_data("XXXX_formatted.json", "Car_models_formatted.json", "Combined_data.json")
 # Close the web browser
 driver.quit()
 
 # Calling a function to combine data
 sleep(5)
 # Calling a function to delete all json files except the required file
-delete_all_json_files_except('Combined_data.json')
+delete_all_json_files_except("Combined_data.json")
 print("Всі дані успішно записано")
-
-
-
